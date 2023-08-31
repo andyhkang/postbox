@@ -1,0 +1,43 @@
+img{
+    margin-top:10px;
+    height:70px;
+}
+body{
+    text-align:center;
+}
+#title{
+    display:flex;
+    justify-content:center;
+}
+#type{
+    display:flex;
+    flex-direction:column;
+    width:800px;
+    margin-left:auto;
+    margin-right:auto;
+}
+#input-el{
+    height:200px;
+}
+#delete{
+    display:flex;
+
+}
+#pw-el{
+    width:397px;
+    margin-left:auto;
+}
+#delete-btn{
+    width:397px;
+    margin-right:auto;
+}
+
+.textbox{
+    background-color:antiquewhite;
+    border:2px solid #c5a8a8;
+    width:800px;
+    margin-left:auto;
+    margin-right:auto;
+    margin-top: 20px;
+    white-space: pre-line;
+}
