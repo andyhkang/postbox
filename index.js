@@ -1,72 +1,66 @@
-const nameEl=document.getElementById("name-el")
+//Database setup
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"
+import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js"
+
+const appSettings={
+    databaseURL: "https://bulletinboard-607b3-default-rtdb.asia-southeast1.firebasedatabase.app/"
+}
+
+const app=initializeApp(appSettings)
+const database=getDatabase(app)
+const postsListInDB=ref(database, "postsList")
+
+
+// Posting features
 const inputEl=document.getElementById("input-el")
-const sentEl=document.getElementById("sent")
-const sendBtn=document.getElementById("send-btn")
-let myLeads=[]
-let leadsFromLocalStorage=JSON.parse(localStorage.getItem("myLeads"))
-let timeAndDate=[]
-let timeAndDateFromLocalStorage=JSON.parse(localStorage.getItem("timeAndDate"))
+const submitBtn=document.getElementById("submit-btn")
+const postsListEl=document.getElementById("posts-list")
 
-if (leadsFromLocalStorage&&timeAndDateFromLocalStorage){
-    myLeads=leadsFromLocalStorage
-    timeAndDate=timeAndDateFromLocalStorage
-    renderLeads()
-}
-
-sendBtn.addEventListener("click", function(){
-
-    if (nameEl.value&&inputEl.value){
-        myLeads.push(nameEl.value)
-        myLeads.push(inputEl.value)
+submitBtn.addEventListener("click", function(){
+    if (inputEl.value){
+        push(postsListInDB, inputEl.value)
         inputEl.value=""
-        nameEl.value=""
-        const today = new Date()
-        const time = today.getHours() + ":" + today.getMinutes()
-        const date = (today.getMonth()+1)+'/'+today.getDate()+'/'+today.getFullYear()
-
-        timeAndDate.push(time)
-        timeAndDate.push(date)
-
-        localStorage.setItem("myLeads", JSON.stringify(myLeads) )
-        localStorage.setItem("timeAndDate", JSON.stringify(timeAndDate))
-        renderLeads()
-
-        console.log("Button clicked"); // Check if the button click event is triggered
-        console.log(nameEl.value);
-        console.log(inputEl.value);
     }
-
-
 })
 
-function renderLeads(){
-    let listItem=""
+onValue(postsListInDB, function(snapshot) {
+    const data = snapshot.val()
 
-    for(let i=0;i<myLeads.length;i+=2){
-        listItem+=`
-        <div class=textbox>
-            <p>
-                ${myLeads[i+1]}<br>
-                ${myLeads[i]}
-                ${timeAndDate[i]}
-                ${timeAndDate[i+1]}
-            </p>
-        </div>
-        `
+    // Clear the posts list
+    clearPostsListEl()
+
+    if (data) {
+        const itemsArray = Object.entries(data)
+
+        for (let i = 0; i < itemsArray.length; i++) {
+            let currentItem = itemsArray[i]
+            appendItemPostsLists(currentItem)
+        }
+    } else {
+        // If there are no items, clear the list to ensure it's empty
+        clearPostsListEl()
     }
-    sentEl.innerHTML=listItem
+})
+
+function appendItemPostsLists(item){
+    let itemID=item[0]
+    let itemValue=item[1]
+
+    let newEl=document.createElement("li")
+    newEl.textContent=itemValue
+
+    postsListEl.append(newEl)
+
+    newEl.addEventListener("dblclick", function(){
+        let exactLocationOfItemInDB=ref(database, `postsList/${itemID}`)
+        remove(exactLocationOfItemInDB)
+
+        if (postsListEl.children.length === 1) { //why does this work? in the first place, how is appenditem function activated when onvalue is not?
+            clearPostsListEl();
+        }
+    })
 }
 
-const deleteBtn=document.getElementById("delete-btn")
-const pwEl=document.getElementById("pw-el")
-
-deleteBtn.addEventListener("click", function(){
-    if(pwEl.value=="0413"){
-        myLeads=[]
-        timeAndDate=[]
-        localStorage.clear()
-        renderLeads()
-    }
-    pwEl.value=""
-
-})
+function clearPostsListEl(){
+    postsListEl.innerHTML=""
+}
